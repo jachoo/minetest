@@ -105,6 +105,8 @@
 #screenshot_path = .
 # Amount of view bobbing (0 = no view bobbing, 1.0 = normal, 2.0 = double)
 #view_bobbing_amount = 1.0
+# Enables extended block selecting feature (you con now build everything without sneaking)
+#extended_block_selecting = false
 
 #
 # Server stuff

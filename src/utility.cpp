@@ -259,7 +259,8 @@ PointedThing::PointedThing():
 	type(POINTEDTHING_NOTHING),
 	node_undersurface(0,0,0),
 	node_abovesurface(0,0,0),
-	object_id(-1)
+	object_id(-1),
+	is_fake(false)
 {}
 
 std::string PointedThing::dump() const
@@ -274,7 +275,8 @@ std::string PointedThing::dump() const
 		const v3s16 &u = node_undersurface;
 		const v3s16 &a = node_abovesurface;
 		os<<"[node under="<<u.X<<","<<u.Y<<","<<u.Z
-			<< " above="<<a.X<<","<<a.Y<<","<<a.Z<<"]";
+		  << " above="<<a.X<<","<<a.Y<<","<<a.Z
+		  << (is_fake?" fake]":"]");
 	}
 	else if(type == POINTEDTHING_OBJECT)
 	{

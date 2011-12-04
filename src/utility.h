@@ -1766,6 +1766,7 @@ struct PointedThing
 	v3s16 node_undersurface;
 	v3s16 node_abovesurface;
 	s16 object_id;
+	bool is_fake; //if true, then disallow digging! [not serialized!]
 
 	PointedThing();
 	std::string dump() const;
