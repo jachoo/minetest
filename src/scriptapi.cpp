@@ -2402,11 +2402,39 @@ private:
 		}
 	}
 
-	// EnvRef:add_luaentity(pos, entityname)
+	// EnvRef:get_node_light(pos, timeofday)
 	// pos = {x=num, y=num, z=num}
-	static int l_add_luaentity(lua_State *L)
+	// timeofday: nil = current time, 0 = night, 0.5 = day
+	static int l_get_node_light(lua_State *L)
 	{
-		//infostream<<"EnvRef::l_add_luaentity()"<<std::endl;
+		EnvRef *o = checkobject(L, 1);
+		ServerEnvironment *env = o->m_env;
+		if(env == NULL) return 0;
+		// Do it
+		v3s16 pos = readpos(L, 2);
+		u32 time_of_day = env->getTimeOfDay();
+		if(lua_isnumber(L, 3))
+			time_of_day = 24000.0 * lua_tonumber(L, 3);
+		time_of_day %= 24000;
+		u32 dnr = time_to_daynight_ratio(time_of_day);
+		MapNode n = env->getMap().getNodeNoEx(pos);
+		try{
+			MapNode n = env->getMap().getNode(pos);
+			INodeDefManager *ndef = env->getGameDef()->ndef();
+			lua_pushinteger(L, n.getLightBlend(dnr, ndef));
+			return 1;
+		} catch(InvalidPositionException &e)
+		{
+			lua_pushnil(L);
+			return 1;
+		}
+	}
+
+	// EnvRef:add_entity(pos, entityname)
+	// pos = {x=num, y=num, z=num}
+	static int l_add_entity(lua_State *L)
+	{
+		//infostream<<"EnvRef::l_add_entity()"<<std::endl;
 		EnvRef *o = checkobject(L, 1);
 		ServerEnvironment *env = o->m_env;
 		if(env == NULL) return 0;
@@ -2571,7 +2599,8 @@ const luaL_reg EnvRef::methods[] = {
 	method(EnvRef, remove_node),
 	method(EnvRef, get_node),
 	method(EnvRef, get_node_or_nil),
-	method(EnvRef, add_luaentity),
+	method(EnvRef, get_node_light),
+	method(EnvRef, add_entity),
 	method(EnvRef, add_item),
 	method(EnvRef, add_rat),
 	method(EnvRef, add_firefly),

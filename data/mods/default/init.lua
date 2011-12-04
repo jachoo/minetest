@@ -146,7 +146,9 @@
 --   ^ Returns {name="ignore", ...} for unloaded area
 -- - get_node_or_nil(pos)
 --   ^ Returns nil for unloaded area
--- - add_luaentity(pos, name)
+-- - get_node_light(pos, timeofday) -> 0...15 or nil
+--   ^ timeofday: nil = current time, 0 = night, 0.5 = day
+-- - add_entity(pos, name)
 -- - add_item(pos, itemstring)
 -- - add_rat(pos)
 -- - add_firefly(pos)
@@ -1333,7 +1335,7 @@ function nodeupdate_single(p)
 		n_bottom = minetest.env:get_node(p_bottom)
 		if n_bottom.name == "air" then
 			minetest.env:remove_node(p)
-			minetest.env:add_luaentity(p, "default:falling_"..n.name)
+			minetest.env:add_entity(p, "default:falling_"..n.name)
 			nodeupdate(p)
 		end
 	end
@@ -1489,7 +1491,9 @@ minetest.register_on_chat_message(function(name, message)
 			print("Unable to spawn entity, player is nil")
 			return true -- Handled chat message
 		end
-		minetest.env:add_luaentity(player:getpos(), entityname)
+		local p = player:getpos()
+		p.y = p.y + 1
+		minetest.env:add_entity(p, entityname)
 		minetest.chat_send_player(name, '"'..entityname
 				..'" spawned.');
 		return true -- Handled chat message
