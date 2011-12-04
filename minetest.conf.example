@@ -38,6 +38,7 @@
 #keymap_right = KEY_KEY_D
 #keymap_jump = KEY_SPACE
 #keymap_sneak = KEY_LSHIFT
+#keymap_crouch = KEY_LCONTROL
 #keymap_inventory = KEY_KEY_I
 # Go down ladder / go down in fly mode / go fast in fast mode
 #keymap_special1 = KEY_KEY_E

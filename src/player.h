@@ -69,7 +69,8 @@ public:
 		// This is at the height of the eyes of the current figure
 		// return v3f(0, BS+BS/2, 0);
 		// This is more like in minecraft
-		return v3f(0,BS+(5*BS)/8,0);
+		//return v3f(0,BS+(5*BS)/8,0);
+		return m_eyeOffset;
 	}
 
 	v3f getEyePosition()
@@ -169,6 +170,7 @@ protected:
 	f32 m_yaw;
 	v3f m_speed;
 	v3f m_position;
+	v3f m_eyeOffset;
 
 public:
 
@@ -188,6 +190,7 @@ struct PlayerControl
 		sneak = false;
 		pitch = 0;
 		yaw = 0;
+		crouch = false;
 	}
 	PlayerControl(
 		bool a_up,
@@ -198,7 +201,8 @@ struct PlayerControl
 		bool a_aux1,
 		bool a_sneak,
 		float a_pitch,
-		float a_yaw
+		float a_yaw,
+		bool a_crouch
 	)
 	{
 		up = a_up;
@@ -210,6 +214,7 @@ struct PlayerControl
 		sneak = a_sneak;
 		pitch = a_pitch;
 		yaw = a_yaw;
+		crouch = a_crouch;
 	}
 	bool up;
 	bool down;
@@ -220,6 +225,7 @@ struct PlayerControl
 	bool sneak;
 	float pitch;
 	float yaw;
+	bool crouch;
 };
 
 class LocalPlayer : public Player
