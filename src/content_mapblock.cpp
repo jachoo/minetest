@@ -680,27 +680,41 @@ void mapblock_mesh_generate_special(MeshMakeData *data,
 						ap.x0(), ap.y0()),
 			};
 
+			video::S3DVertex vertices2[4];
+
 			for(s32 i=0; i<4; i++)
 			{
 				if(dir == v3s16(1,0,0))
 					vertices[i].Pos.rotateXZBy(0);
-				if(dir == v3s16(-1,0,0))
+				else if(dir == v3s16(-1,0,0))
 					vertices[i].Pos.rotateXZBy(180);
-				if(dir == v3s16(0,0,1))
+				else if(dir == v3s16(0,0,1))
 					vertices[i].Pos.rotateXZBy(90);
-				if(dir == v3s16(0,0,-1))
+				else if(dir == v3s16(0,0,-1))
 					vertices[i].Pos.rotateXZBy(-90);
-				if(dir == v3s16(0,-1,0))
+				else if(dir == v3s16(0,-1,0))
 					vertices[i].Pos.rotateXZBy(45);
-				if(dir == v3s16(0,1,0))
+				else if(dir == v3s16(0,1,0))
 					vertices[i].Pos.rotateXZBy(-45);
 
-				vertices[i].Pos += intToFloat(p + blockpos_nodes, BS);
+				vertices2[i] = vertices[i];
+				vertices2[i].Pos += intToFloat(p + blockpos_nodes, BS);
 			}
 
 			u16 indices[] = {0,1,2,2,3,0};
 			// Add to mesh collector
-			collector.append(material, vertices, 4, indices, 6);
+			collector.append(material, vertices2, 4, indices, 6);
+
+			if(dir.Y != 0) //floor or ceiling - add second mesh rotated by 90*
+			{
+				for(s32 i=0; i<4; i++)
+				{
+					vertices[i].Pos.rotateXZBy(-90);
+					vertices2[i].Pos = vertices[i].Pos + intToFloat(p + blockpos_nodes, BS);
+				}
+				collector.append(material, vertices2, 4, indices, 6);
+			}
+
 		break;}
 		case NDT_SIGNLIKE:
 		{
