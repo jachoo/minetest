@@ -578,7 +578,7 @@ PointedThing getPointedThing(Client *client, v3f player_position,
 						//if no node has been found - we try to find 'fake' pointed node
 						}else if(extBlockSel
 								&& result.type == POINTEDTHING_NOTHING
-								&& distance < (BS*6) //is this OK?
+								&& distance < (BS*6) //is this enough?
 								&& np != pos_i 
 								&& np != v3s16(pos_i.X,pos_i.Y+1,pos_i.Z) 
 								&& client->getNodeDefManager()->get(n).buildable_to)
@@ -596,6 +596,8 @@ PointedThing getPointedThing(Client *client, v3f player_position,
 									//FIXME: when it will be possible to build on torches, rails etc. then change .walkable to .pointable
 									if(!client->getNodeDefManager()->get(an).walkable)
 										continue;
+
+									//check if we can build onto this node by normally selecting it
 									if(    npos.X==camdir_i.X //is it same direction as camera?
 										|| npos.Y==camdir_i.Y
 										|| npos.Z==camdir_i.Z
@@ -606,16 +608,20 @@ PointedThing getPointedThing(Client *client, v3f player_position,
 										can_build = false;
 										break;
 									}
+
+									//finally, we can build 'extended way' on this block
 									can_build = true;
 									neigh_pos = ap;
+
 								}catch(InvalidPositionException&){}
 							}
 							if(can_build && distance > maxdistance){
 
 								maxdistance = distance;
 
-								//nodefound = true;   //we can't do this here!
-								freeNodeFound = true; //instead, we set this and check at the end
+								//result.type = POINTEDTHING_NODE;	//we can't do this here!
+								freeNodeFound = true;				//instead, we set this and check at the end
+
 								result.node_undersurface = neigh_pos; //yes, these are swaped!
 								result.node_abovesurface = np;
 
@@ -626,7 +632,7 @@ PointedThing getPointedThing(Client *client, v3f player_position,
 								nodebox.MinEdge += nodepos_f;
 								nodebox.MaxEdge += nodepos_f;
 								hilightbox = nodebox;
-								//should_show_hilightbox = true;
+								//should_show_hilightbox = true; //we must do this at the end
 							}
 						}
 					}
