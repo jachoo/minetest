@@ -188,7 +188,7 @@ LocalPlayer::LocalPlayer(IGameDef *gamedef):
 	Player(gamedef),
 	m_sneak_node(32767,32767,32767),
 	m_sneak_node_exists(false),
-	m_must_crouch(false)
+	m_must_crawl(false)
 {
 	// Initialize hp to 0, so that no hearts will be shown if server
 	// doesn't support health points
@@ -600,9 +600,9 @@ void LocalPlayer::move(f32 dtime, Map &map, f32 pos_max_d,
 	}
 
 	/*
-		Check if player must crouch
+		Check if player must crawl
 	*/
-	bool must_crouch = false;
+	bool must_crawl = false;
 	v3s16 pos_head_i = floatToInt(v3f(position.X,position.Y+m_eyeOffsetMax+BS*0.05f,position.Z), BS);
 	for(s16 z = -1; z <= 1; z++)
 	for(s16 x = -1; x <= 1; x++)
@@ -613,18 +613,17 @@ void LocalPlayer::move(f32 dtime, Map &map, f32 pos_max_d,
 			if(nodemgr->get(map.getNode(np)).walkable == false)
 				continue;
 			core::aabbox3d<f32> nodebox = getNodeBox(np, BS);
-			if(    (m_must_crouch || control.crouch)				//shall we test it?
+			if(    (m_must_crawl || control.crawl)				//shall we test it?
 				&& playerbox_standing.intersectsWithBox(nodebox)	//colliding with the node?
 			  )
 			{
-				must_crouch = true;
+				must_crawl = true;
 			}
 		}
 		catch(InvalidPositionException &e)
 		{}
 	}
-	m_must_crouch = must_crouch;
-	std::cout << "must_crouch = " << (must_crouch?"true":"false") << std::endl; //j@@@
+	m_must_crawl = must_crawl;
 	
 	/*
 		Set new position
@@ -687,10 +686,8 @@ void LocalPlayer::applyControl(float dtime)
 	if(free_move && fast_move)
 		superspeed = true;
 
-	// If must crouch - then crouch ;)
-	if(m_must_crouch) control.crouch = true;
-
-	//if(control.crouch) control.sneak = true;
+	// If must crawl - then crawl ;)
+	if(m_must_crawl) control.crawl = true;
 	
 	// Auxiliary button 1 (E)
 	if(control.aux1)
@@ -784,7 +781,7 @@ void LocalPlayer::applyControl(float dtime)
 	// The speed of the player (Y is ignored)
 	if(superspeed)
 		speed = speed.normalize() * walkspeed_max * 5.0;
-	else if(control.sneak || control.crouch)
+	else if(control.sneak || control.crawl)
 		speed = speed.normalize() * walkspeed_max / 3.0;
 	else
 		speed = speed.normalize() * walkspeed_max;
@@ -799,8 +796,8 @@ void LocalPlayer::applyControl(float dtime)
 	accelerate(speed, inc);
 
 	static const f32 eyes_delta = 10.f;
-	if(control.crouch){
-		//crouching
+	if(control.crawl){
+		//crawling
 		if(m_eyeOffset.Y > m_eyeOffsetMin + 0.01f)
 			m_eyeOffset.Y += (m_eyeOffsetMin-m_eyeOffset.Y) * eyes_delta * dtime;
 		else m_eyeOffset.Y = m_eyeOffsetMin;

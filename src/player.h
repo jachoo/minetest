@@ -192,7 +192,7 @@ struct PlayerControl
 		sneak = false;
 		pitch = 0;
 		yaw = 0;
-		crouch = false;
+		crawl = false;
 	}
 	PlayerControl(
 		bool a_up,
@@ -204,7 +204,7 @@ struct PlayerControl
 		bool a_sneak,
 		float a_pitch,
 		float a_yaw,
-		bool a_crouch
+		bool a_crawl
 	)
 	{
 		up = a_up;
@@ -216,7 +216,7 @@ struct PlayerControl
 		sneak = a_sneak;
 		pitch = a_pitch;
 		yaw = a_yaw;
-		crouch = a_crouch;
+		crawl = a_crawl;
 	}
 	bool up;
 	bool down;
@@ -227,7 +227,7 @@ struct PlayerControl
 	bool sneak;
 	float pitch;
 	float yaw;
-	bool crouch;
+	bool crawl;
 };
 
 class LocalPlayer : public Player
@@ -255,7 +255,7 @@ private:
 	// Whether the player is allowed to sneak
 	bool m_sneak_node_exists;
 	// Whether player can't stand
-	bool m_must_crouch;
+	bool m_must_crawl;
 };
 #endif // !SERVER
 

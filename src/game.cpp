@@ -1665,7 +1665,7 @@ void the_game(
 				input->isKeyDown(getKeySetting("keymap_sneak")),
 				camera_pitch,
 				camera_yaw,
-				input->isKeyDown(getKeySetting("keymap_crouch"))
+				input->isKeyDown(getKeySetting("keymap_crawl"))
 			);
 			client.setPlayerControl(control);
 		}
