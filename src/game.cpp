@@ -1662,7 +1662,7 @@ void the_game(
 				input->isKeyDown(getKeySetting("keymap_right")),
 				input->isKeyDown(getKeySetting("keymap_jump")),
 				input->isKeyDown(getKeySetting("keymap_special1")),
-				input->isKeyDown(getKeySetting("keymap_sneak")) || input->isKeyDown(getKeySetting("keymap_crouch")),
+				input->isKeyDown(getKeySetting("keymap_sneak")),
 				camera_pitch,
 				camera_yaw,
 				input->isKeyDown(getKeySetting("keymap_crouch"))

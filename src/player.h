@@ -171,6 +171,8 @@ protected:
 	v3f m_speed;
 	v3f m_position;
 	v3f m_eyeOffset;
+	static f32 m_eyeOffsetMax;
+	static f32 m_eyeOffsetMin;
 
 public:
 
@@ -252,6 +254,8 @@ private:
 	v3s16 m_sneak_node;
 	// Whether the player is allowed to sneak
 	bool m_sneak_node_exists;
+	// Whether player can't stand
+	bool m_must_crouch;
 };
 #endif // !SERVER
 

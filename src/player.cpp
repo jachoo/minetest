@@ -31,6 +31,9 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "environment.h"
 #include "gamedef.h"
 
+f32 Player::m_eyeOffsetMax = BS+(5*BS)/8;
+f32 Player::m_eyeOffsetMin = BS * 0.9f;
+
 Player::Player(IGameDef *gamedef):
 	touching_ground(false),
 	in_water(false),
@@ -48,7 +51,7 @@ Player::Player(IGameDef *gamedef):
 	m_yaw(0),
 	m_speed(0,0,0),
 	m_position(0,0,0),
-	m_eyeOffset(0,BS+(5*BS)/8,0)
+	m_eyeOffset(0,m_eyeOffsetMax,0)
 {
 	updateName("<not set>");
 	resetInventory();
@@ -184,7 +187,8 @@ void Player::deSerialize(std::istream &is)
 LocalPlayer::LocalPlayer(IGameDef *gamedef):
 	Player(gamedef),
 	m_sneak_node(32767,32767,32767),
-	m_sneak_node_exists(false)
+	m_sneak_node_exists(false),
+	m_must_crouch(false)
 {
 	// Initialize hp to 0, so that no hearts will be shown if server
 	// doesn't support health points
@@ -290,7 +294,8 @@ void LocalPlayer::move(f32 dtime, Map &map, f32 pos_max_d,
 	assert(d > pos_max_d);
 
 	float player_radius = BS*0.35;
-	float player_height = BS*1.7;
+	float player_height = m_eyeOffset.Y + BS*0.05f;
+	float player_maxheight = m_eyeOffsetMax + BS*0.05f;
 	
 	// Maximum distance over border for sneaking
 	f32 sneak_max = BS*0.4;
@@ -348,6 +353,14 @@ void LocalPlayer::move(f32 dtime, Map &map, f32 pos_max_d,
 		position.Y + player_height,
 		position.Z + player_radius
 	);
+	core::aabbox3d<f32> playerbox_standing(
+		position.X - player_radius,
+		position.Y - 0.0,
+		position.Z - player_radius,
+		position.X + player_radius,
+		position.Y + player_maxheight,
+		position.Z + player_radius
+	);
 	core::aabbox3d<f32> playerbox_old(
 		oldpos.X - player_radius,
 		oldpos.Y - 0.0,
@@ -372,11 +385,12 @@ void LocalPlayer::move(f32 dtime, Map &map, f32 pos_max_d,
 			<<"):"<<std::endl;*/
 	
 	bool standing_on_unloaded = false;
-	
+	const s16 player_height_i = player_height/BS + 1;
+
 	/*
 		Go through every node around the player
 	*/
-	for(s16 y = oldpos_i.Y - 1; y <= oldpos_i.Y + 2; y++)
+	for(s16 y = oldpos_i.Y - 1; y <= oldpos_i.Y + player_height_i; y++)
 	for(s16 z = oldpos_i.Z - 1; z <= oldpos_i.Z + 1; z++)
 	for(s16 x = oldpos_i.X - 1; x <= oldpos_i.X + 1; x++)
 	{
@@ -584,6 +598,33 @@ void LocalPlayer::move(f32 dtime, Map &map, f32 pos_max_d,
 		if(sneak_node_found && control.sneak)
 			touching_ground = true;
 	}
+
+	/*
+		Check if player must crouch
+	*/
+	bool must_crouch = false;
+	v3s16 pos_head_i = floatToInt(v3f(position.X,position.Y+m_eyeOffsetMax+BS*0.05f,position.Z), BS);
+	for(s16 z = -1; z <= 1; z++)
+	for(s16 x = -1; x <= 1; x++)
+	{
+		try{
+			// Player collides into walkable nodes
+			v3s16 np(pos_head_i.X+x,pos_head_i.Y,pos_head_i.Z+z);
+			if(nodemgr->get(map.getNode(np)).walkable == false)
+				continue;
+			core::aabbox3d<f32> nodebox = getNodeBox(np, BS);
+			if(    (m_must_crouch || control.crouch)				//shall we test it?
+				&& playerbox_standing.intersectsWithBox(nodebox)	//colliding with the node?
+			  )
+			{
+				must_crouch = true;
+			}
+		}
+		catch(InvalidPositionException &e)
+		{}
+	}
+	m_must_crouch = must_crouch;
+	std::cout << "must_crouch = " << (must_crouch?"true":"false") << std::endl; //j@@@
 	
 	/*
 		Set new position
@@ -645,6 +686,11 @@ void LocalPlayer::applyControl(float dtime)
 	// If free movement and fast movement, always move fast
 	if(free_move && fast_move)
 		superspeed = true;
+
+	// If must crouch - then crouch ;)
+	if(m_must_crouch) control.crouch = true;
+
+	//if(control.crouch) control.sneak = true;
 	
 	// Auxiliary button 1 (E)
 	if(control.aux1)
@@ -738,7 +784,7 @@ void LocalPlayer::applyControl(float dtime)
 	// The speed of the player (Y is ignored)
 	if(superspeed)
 		speed = speed.normalize() * walkspeed_max * 5.0;
-	else if(control.sneak)
+	else if(control.sneak || control.crouch)
 		speed = speed.normalize() * walkspeed_max / 3.0;
 	else
 		speed = speed.normalize() * walkspeed_max;
@@ -752,19 +798,17 @@ void LocalPlayer::applyControl(float dtime)
 	// Accelerate to target speed with maximum increment
 	accelerate(speed, inc);
 
-	static const f32 eyes_max = BS+(5*BS)/8;
-	static const f32 eyes_min = BS * 0.9f;
 	static const f32 eyes_delta = 10.f;
 	if(control.crouch){
 		//crouching
-		if(m_eyeOffset.Y > eyes_min + 0.01f)
-			m_eyeOffset.Y += (eyes_min-m_eyeOffset.Y) * eyes_delta * dtime;
-		else m_eyeOffset.Y = eyes_min;
+		if(m_eyeOffset.Y > m_eyeOffsetMin + 0.01f)
+			m_eyeOffset.Y += (m_eyeOffsetMin-m_eyeOffset.Y) * eyes_delta * dtime;
+		else m_eyeOffset.Y = m_eyeOffsetMin;
 	}else{
 		//standing
-		if(m_eyeOffset.Y < eyes_max - 0.01f)
-			m_eyeOffset.Y += (eyes_max-m_eyeOffset.Y) * eyes_delta * dtime;
-		else m_eyeOffset.Y = eyes_max;
+		if(m_eyeOffset.Y < m_eyeOffsetMax - 0.01f)
+			m_eyeOffset.Y += (m_eyeOffsetMax-m_eyeOffset.Y) * eyes_delta * dtime;
+		else m_eyeOffset.Y = m_eyeOffsetMax;
 	}
 }
 #endif
