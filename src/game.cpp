@@ -346,9 +346,8 @@ PointedThing getPointedThing(Client *client, v3f player_position,
 
 	// That didn't work, try to find a pointed at node
 
-	static const bool extBlockSel = g_settings->getBool("extended_block_selecting");
-	bool onlyFreeFound = false;
-	bool freeNodeFound = false;
+	static const bool ext_block_sel = g_settings->getBool("extended_block_selecting");
+	bool free_node_found = false;
 
 	f32 mindistance = BS * 1001;	//used for regular blocks
 	f32 maxdistance = -BS * 1001;	//used for free blocks
@@ -576,7 +575,7 @@ PointedThing getPointedThing(Client *client, v3f player_position,
 							should_show_hilightbox = true;
 
 						//if no node has been found - we try to find 'fake' pointed node
-						}else if(extBlockSel
+						}else if(ext_block_sel
 								&& result.type == POINTEDTHING_NOTHING
 								&& distance < (BS*6) //is this enough?
 								&& np != pos_i 
@@ -598,10 +597,10 @@ PointedThing getPointedThing(Client *client, v3f player_position,
 										continue;
 
 									//check if we can build onto this node by normally selecting it
-									if(    npos.X==camdir_i.X //is it same direction as camera?
+									if(    npos.X==camdir_i.X //check if it's the same direction as camera
 										|| npos.Y==camdir_i.Y
 										|| npos.Z==camdir_i.Z
-										|| (npos.X != 0 && cam_i.X == np.X) //is it the same axis as camera?
+										|| (npos.X != 0 && cam_i.X == np.X) //check if it's the same axis as camera
 										|| (npos.Y != 0 && cam_i.Y == np.Y)
 										|| (npos.Z != 0 && cam_i.Z == np.Z) )
 									{
@@ -619,10 +618,10 @@ PointedThing getPointedThing(Client *client, v3f player_position,
 
 								maxdistance = distance;
 
-								//result.type = POINTEDTHING_NODE;	//we can't do this here!
-								freeNodeFound = true;				//instead, we set this and check at the end
+								//result.type = POINTEDTHING_NODE;	//we can't do this here
+								free_node_found = true;				//instead, we set this and check at the end
 
-								result.node_undersurface = neigh_pos; //yes, these are swaped!
+								result.node_undersurface = neigh_pos; //yes, these are swaped
 								result.node_abovesurface = np;
 
 								const float d = 0.502;
@@ -641,7 +640,7 @@ PointedThing getPointedThing(Client *client, v3f player_position,
 		} // regular block
 	} // for coords
 
-	if(extBlockSel && result.type == POINTEDTHING_NOTHING && freeNodeFound){
+	if(ext_block_sel && result.type == POINTEDTHING_NOTHING && free_node_found){
 		result.is_fake = true;
 		result.type = POINTEDTHING_NODE;
 		should_show_hilightbox = true;

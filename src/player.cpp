@@ -31,8 +31,8 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 #include "environment.h"
 #include "gamedef.h"
 
-f32 Player::m_eyeOffsetMax = BS+(5*BS)/8;
-f32 Player::m_eyeOffsetMin = BS * 0.9f;
+#define EYE_OFFSET_MAX (BS+(5*BS)/8)
+#define EYE_OFFSET_MIN (BS * 0.9f)
 
 Player::Player(IGameDef *gamedef):
 	touching_ground(false),
@@ -51,7 +51,7 @@ Player::Player(IGameDef *gamedef):
 	m_yaw(0),
 	m_speed(0,0,0),
 	m_position(0,0,0),
-	m_eyeOffset(0,m_eyeOffsetMax,0)
+	m_eye_offset(0,EYE_OFFSET_MAX,0)
 {
 	updateName("<not set>");
 	resetInventory();
@@ -294,8 +294,8 @@ void LocalPlayer::move(f32 dtime, Map &map, f32 pos_max_d,
 	assert(d > pos_max_d);
 
 	float player_radius = BS*0.35;
-	float player_height = m_eyeOffset.Y + BS*0.05f;
-	float player_maxheight = m_eyeOffsetMax + BS*0.05f;
+	float player_height = m_eye_offset.Y + BS*0.05f;
+	float player_maxheight = EYE_OFFSET_MAX + BS*0.05f;
 	
 	// Maximum distance over border for sneaking
 	f32 sneak_max = BS*0.4;
@@ -603,7 +603,7 @@ void LocalPlayer::move(f32 dtime, Map &map, f32 pos_max_d,
 		Check if player must crawl
 	*/
 	bool must_crawl = false;
-	v3s16 pos_head_i = floatToInt(v3f(position.X,position.Y+m_eyeOffsetMax+BS*0.05f,position.Z), BS);
+	v3s16 pos_head_i = floatToInt(v3f(position.X,position.Y+EYE_OFFSET_MAX+BS*0.05f,position.Z), BS);
 	for(s16 z = -1; z <= 1; z++)
 	for(s16 x = -1; x <= 1; x++)
 	{
@@ -613,8 +613,8 @@ void LocalPlayer::move(f32 dtime, Map &map, f32 pos_max_d,
 			if(nodemgr->get(map.getNode(np)).walkable == false)
 				continue;
 			core::aabbox3d<f32> nodebox = getNodeBox(np, BS);
-			if(    (m_must_crawl || control.crawl)				//shall we test it?
-				&& playerbox_standing.intersectsWithBox(nodebox)	//colliding with the node?
+			if(    (m_must_crawl || control.crawl)					//only if we were crawling before
+				&& playerbox_standing.intersectsWithBox(nodebox)	//only when colliding with the node
 			  )
 			{
 				must_crawl = true;
@@ -798,14 +798,14 @@ void LocalPlayer::applyControl(float dtime)
 	static const f32 eyes_delta = 10.f;
 	if(control.crawl){
 		//crawling
-		if(m_eyeOffset.Y > m_eyeOffsetMin + 0.01f)
-			m_eyeOffset.Y += (m_eyeOffsetMin-m_eyeOffset.Y) * eyes_delta * dtime;
-		else m_eyeOffset.Y = m_eyeOffsetMin;
+		if(m_eye_offset.Y > EYE_OFFSET_MIN + 0.01f)
+			m_eye_offset.Y += (EYE_OFFSET_MIN-m_eye_offset.Y) * eyes_delta * dtime;
+		else m_eye_offset.Y = EYE_OFFSET_MIN;
 	}else{
 		//standing
-		if(m_eyeOffset.Y < m_eyeOffsetMax - 0.01f)
-			m_eyeOffset.Y += (m_eyeOffsetMax-m_eyeOffset.Y) * eyes_delta * dtime;
-		else m_eyeOffset.Y = m_eyeOffsetMax;
+		if(m_eye_offset.Y < EYE_OFFSET_MAX - 0.01f)
+			m_eye_offset.Y += (EYE_OFFSET_MAX-m_eye_offset.Y) * eyes_delta * dtime;
+		else m_eye_offset.Y = EYE_OFFSET_MAX;
 	}
 }
 #endif

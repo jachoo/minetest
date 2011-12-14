@@ -274,9 +274,9 @@ std::string PointedThing::dump() const
 	{
 		const v3s16 &u = node_undersurface;
 		const v3s16 &a = node_abovesurface;
-		os<<"[node under="<<u.X<<","<<u.Y<<","<<u.Z
-		  << " above="<<a.X<<","<<a.Y<<","<<a.Z
-		  << (is_fake?" fake]":"]");
+		os	<< "[node under="<<u.X<<","<<u.Y<<","<<u.Z
+			<< " above="<<a.X<<","<<a.Y<<","<<a.Z
+			<< (is_fake?" fake]":"]");
 	}
 	else if(type == POINTEDTHING_OBJECT)
 	{

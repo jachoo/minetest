@@ -70,7 +70,7 @@ public:
 		// return v3f(0, BS+BS/2, 0);
 		// This is more like in minecraft
 		//return v3f(0,BS+(5*BS)/8,0);
-		return m_eyeOffset;
+		return m_eye_offset;
 	}
 
 	v3f getEyePosition()
@@ -170,9 +170,7 @@ protected:
 	f32 m_yaw;
 	v3f m_speed;
 	v3f m_position;
-	v3f m_eyeOffset;
-	static f32 m_eyeOffsetMax;
-	static f32 m_eyeOffsetMin;
+	v3f m_eye_offset;
 
 public:
 
